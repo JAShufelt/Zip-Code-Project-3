@@ -136,7 +136,7 @@ int main(int argc, char* argv[])
 					getline(blocked, block_line, ',');
 					successor = block_line;
 
-					while (successor.size() < 5)
+					while (successor.size() < 5)			//padding to fit the 5 digit format
 					{
 						successor = "0" + successor;
 					}
@@ -210,7 +210,7 @@ int main(int argc, char* argv[])
 
 					} rbn_and_keys.push_back(successor);		//leave the successor til the end. 
 
-					for (int i = 0; i < vector_size; i++)
+					for (int i = 0; i < vector_size; i++)	//loop to output to both files
 					{
 						physical_location_file << rbn_and_keys[i];
 						logical_location_file << rbn_and_keys[i];
