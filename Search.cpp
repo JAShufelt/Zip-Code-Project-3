@@ -1,6 +1,4 @@
-// Search.cpp : This file contains the 'main' function. Program execution begins and ends there.
-//
-
+#include "Search.h"
 #include <fstream>
 #include <iostream>
 #include <iostream>
@@ -12,7 +10,7 @@
 
 using namespace std;
 
-int main(int argc, char* argv[])
+void Seacrh::Search(int argc, char* argv[])
 {
 	ifstream index;
 	ifstream blocked;
@@ -100,132 +98,7 @@ int main(int argc, char* argv[])
 		}
 		if (temp.substr(0, 3) == "-dp" && "-dl")  //Flag for displaying dump files
 		{
-			vector<string> rbn_and_keys;
-
-			int record_count;
-			int	vector_size = rbn_and_keys.size();
-
-			bool read_preandsucc = false;
-
-			index.open(blocked_filename);
-
-			ofstream physical_location_file;
-			ofstream logical_location_file;
-
-			string predecessor;
-			string successor;
-
-			physical_location_file.open("us_postal_codes_PHYSICAL_ORDERING.txt");
-			logical_location_file.open("us_postal_codes_LOGICAL_ORDERING.txt");
-			while (!blocked.eof())
-			{
-				for (int i = 0; i < 22; i++)     //Skip past the header in BSS data file
-				{
-					getline(blocked, bypass_header);
-				}
-				getline(blocked, block_line, ',');	//convert block entires to an int for later for loop iterating for all zipcodes. 
-				int block__line = stoi(block_line);
-				if (block__line == 9 || block__line == 10) {
-					record_count = block__line;
-					cin.clear();
-				}
-				if (record_count == 0)		//condition for avail block. 
-				{
-					getline(blocked, block_line, ',');
-					predecessor = block_line;
-					getline(blocked, block_line, ',');
-					successor = block_line;
-
-					while (successor.size() < 5)			//padding to fit the 5 digit format
-					{
-						successor = "0" + successor;
-					}
-
-					while (predecessor.size() < 5)
-					{
-						predecessor = "0" + predecessor;
-					}
-
-					logical_location_file << predecessor << ',' << "AVAIL" << ',' << successor << endl;
-				}
-				while (record_count == 10 || block__line == 9) {	//loop to process a data block
-					int readzipcodecount;
-					int interna_lrecord_count = 0;
-					interna_lrecord_count = record_count;
-					for (readzipcodecount = 0; readzipcodecount < interna_lrecord_count; readzipcodecount++) //loop to read every recprd with the exit condition being readzipcount = recordcount
-					{
-						if (read_preandsucc == false) {
-							getline(blocked, block_line, ',');
-							predecessor = block_line;
-							while (predecessor.size() < 5)
-							{
-								predecessor = "0" + predecessor;
-							}
-							predecessor = predecessor + ',';
-							rbn_and_keys.push_back(predecessor);
-							getline(blocked, block_line, ',');
-							successor = block_line;
-							while (successor.size() < 5)
-							{
-								successor = "0" + successor;
-							}
-							successor = successor + ',';
-							read_preandsucc = true;
-						}
-
-						string zipcode;
-						string recordlength;
-						string  city;
-						string	state;
-						string	county;
-
-						double long_and_lat_holder;
-						double longi;
-						double lati;
-
-						getline(blocked, block_line, ',');
-						recordlength = block_line;
-						getline(blocked, block_line, ',');
-						zipcode = block_line;
-						while (zipcode.size() < 5)
-						{
-							zipcode = "0" + zipcode;
-						}
-						zipcode = zipcode + ',';
-						getline(blocked, block_line, ',');		//hold unused variables but dont use them. 
-						city = block_line;
-						getline(blocked, block_line, ',');
-						state = block_line;
-						getline(blocked, block_line, ',');
-						county = block_line;
-
-						getline(blocked, block_line, ',');
-						long_and_lat_holder = stod(block_line);
-						longi = long_and_lat_holder;
-						getline(blocked, block_line, ',');
-						long_and_lat_holder = stod(block_line);
-						lati = long_and_lat_holder;
-
-						rbn_and_keys.push_back(zipcode);
-
-					} rbn_and_keys.push_back(successor);		//leave the successor til the end. 
-
-					for (int i = 0; i < vector_size; i++)	//loop to output to both files
-					{
-						physical_location_file << rbn_and_keys[i];
-						logical_location_file << rbn_and_keys[i];
-					}
-					physical_location_file << endl;
-					logical_location_file << endl;
-
-					rbn_and_keys.clear();
-					read_preandsucc = false;		//reseting variables
-					record_count = 0;
-					block__line = 0;
-				}
-				physical_location_file.close();
-				logical_location_file.close();
-			}
+			dump(blocked_filename)
 		}
 	}
 	index.close();
@@ -268,4 +141,182 @@ int main(int argc, char* argv[])
 // @post A table of the search results is displayed to the user.
 // @param arc Int containing the number of commandline arguments passed.
 // @param argv[] string[] containing the blocked sequence set data file as the first element, followed by search terms.
+*/
+
+void Search::dump(ifstream& blocked)
+{
+
+	vector<string> rbn_and_keys_phys;
+        vector<string> rbn_and_keys_log;
+
+		int record_count;
+		int	vector_size_phys = rbn_and_keys_phys.size();
+        	int	vector_size_log = rbn_and_keys_log.size();
+
+		bool read_preandsucc = false;
+
+		index.open(blocked);
+
+		ofstream physical_location_file;
+		ofstream logical_location_file;
+
+		string predecessor;
+		string successor;
+        	string* pre;
+		string* succ;
+
+		physical_location_file.open("us_postal_codes_PHYSICAL_ORDERING.txt");
+		logical_location_file.open("us_postal_codes_LOGICAL_ORDERING.txt");
+		while (!blocked.eof())
+		{
+			for (int i = 0; i < 22; i++)     //Skip past the header in BSS data file
+			{
+				getline(blocked, bypass_header);
+			}
+			getline(blocked, block_line, ',');	//convert block entires to an int for later for loop iterating for all zipcodes. 
+			int block__line = stoi(block_line);
+			if (block__line == 9 || block__line == 10) {
+				record_count = block__line;
+				cin.clear();
+			}
+			if (record_count == 0)		//condition for avail block. 
+			{
+				getline(blocked, block_line, ',');
+				predecessor = block_line;
+                		pre = block_line;
+				getline(blocked, block_line, ',');
+				successor = block_line;
+                   		succ = block_line;
+				while (successor.size() < 5)			//padding to fit the 5 digit format
+				{
+					successor = "0" + successor;
+				}
+
+				while (predecessor.size() < 5)
+				{
+					predecessor = "0" + predecessor;
+				}
+                		while (succ.size() < 5)			//padding to fit the 5 digit format
+				{
+					succ = "0" + succ;
+				}
+
+				while (pre.size() < 5)
+				{
+					pre = "0" + pre;
+				}
+
+				physical_location_file << predecessor << ',' << "AVAIL" << ',' << successor << endl;
+				logical_location_file << pre << ',' << "AVAIL" << ',' << succ << endl;
+			}
+			while (record_count == 10 || block__line == 9) {	//loop to process a data block
+				int internal_record_count = 0;
+				internal_record_count = record_count;
+				for (int readzipcodecount = 0; readzipcodecount < internal_record_count; readzipcodecount++) //loop to read every record with the exit condition being readzipcount = recordcount
+				{
+					if (read_preandsucc == false) {
+						getline(blocked, block_line, ',');
+						predecessor = block_line;
+						while (predecessor.size() < 5)
+						{
+							predecessor = "0" + predecessor;
+						}
+						predecessor = predecessor + ',';
+						rbn_and_keys_phys.push_back(predecessor);
+						getline(blocked, block_line, ',');
+						successor = block_line;
+						while (successor.size() < 5)
+						{
+							successor = "0" + successor;
+						}
+						successor = successor + ',';
+						read_preandsucc = true;
+					}
+                		for (int readzipcodecount = 0; readzipcodecount < internal_record_count; readzipcodecount++) //loop to read every record with the exit condition being readzipcount = recordcount
+				{
+					if (read_preandsucc == false) {
+						getline(blocked, block_line, ',');
+						pre = block_line;
+						while (pre.size() < 5)
+						{
+							pre = "0" + pre;
+						}
+						pre= pre + ',';
+						rbn_and_keys_log.push_back(pre);
+						getline(blocked, block_line, ',');
+						succ = *block_line;
+						while (succ.size() < 5)
+						{
+							succ = "0" + succ;
+						}
+						succ = succ + ',';
+						read_preandsucc = true;
+					}
+
+					string zipcode;
+					string recordlength;
+					string  city;
+					string	state;
+					string	county;
+
+					double long_and_lat_holder;
+					double longi;
+					double lati;
+
+					getline(blocked, block_line, ',');
+					recordlength = block_line;
+					getline(blocked, block_line, ',');
+					zipcode = block_line;
+					while (zipcode.size() < 5)
+					{
+						zipcode = "0" + zipcode;
+					}
+					zipcode = zipcode + ',';
+					getline(blocked, block_line, ',');		//hold unused variables but dont use them. 
+					city = block_line;
+					getline(blocked, block_line, ',');
+					state = block_line;
+					getline(blocked, block_line, ',');
+					county = block_line;
+
+					getline(blocked, block_line, ',');
+					long_and_lat_holder = stod(block_line);
+					longi = long_and_lat_holder;
+					getline(blocked, block_line, ',');
+					long_and_lat_holder = stod(block_line);
+					lati = long_and_lat_holder;
+
+					rbn_and_keys_phys.push_back(zipcode);
+                    			rbn_and_keys_log.push_back(zipcode);
+
+				}
+                		rbn_and_keys_phys.push_back(successor);		//leave the successor til the end. 
+                		rbn_and_keys_log.push_back(successor);
+
+				for (int i = 0; i < vector_size_phys; i++)	//loop to output to physical location files
+					physical_location_file << rbn_and_keys_phys[i];
+				for (int i = 0; i < vector_size_log; i++)	//loop to output to logical location files
+					logical_location_file << rbn_and_keys_log[i];
+				physical_location_file << endl;
+				logical_location_file << endl;
+
+				rbn_and_keys_phys.clear();
+                		rbn_and_keys_log.clear();
+				read_preandsucc = false;		//reseting variables
+				record_count = 0;
+				block__line = 0;
+			}
+			physical_location_file.close();
+			logical_location_file.close();
+		}
+};
+
+/**<
+// This function gets passed a file that starts with a 22-line header and contains the zip codes of records that should be dumped.
+// These zip codes are read and the information and memory for physical and logical dumps are displayed in new files with file
+// names corresponding to the type of dump.
+// @pre A file exists that contains one zip code per line starting at the 23rd line.
+// @post Two files exist, one with physical dumps and one with logical dumps for each.
+// @param blocked ifstream& A file containing the records being dumped with a 22-line header at the top.
+// @return Nothing.
 */
